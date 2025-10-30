@@ -3,12 +3,25 @@ info:
   title: Statement API
   version: "1.0.0"
   description: "Statement API example with snake_case response envelope"
+  termsOfService: "https://example.com/terms"
+  contact:
+    name: "API Team"
+    email: "api-team@example.com"
+    url: "https://example.com/support"
+  license:
+    name: "Apache-2.0"
+    url: "https://www.apache.org/licenses/LICENSE-2.0.html"
 servers:
   - url: "http://localhost:4010"
+tags:
+  - name: statements
+    description: "Operations related to statement resources"
 paths:
   /statements/{id}:
     get:
       summary: 取得單一 statement（範例）
+      description: "取得指定 id 的 statement 詳細資訊。回傳通用 response_envelope，payload 為 statement（或 null，視情境而定）。"
+      operationId: getStatementById
       tags:
         - statements
       parameters:
@@ -36,7 +49,8 @@ paths:
                     timestamp: "2025-10-30T00:00:00Z"
                     code: "OK"
                     message: "查詢成功"
-                    payload: null
+                    payload:
+                      id: 0
                     meta: null
                     errors: null
         "422":
