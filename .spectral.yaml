@@ -1,0 +1,49 @@
+extends: ["spectral:oas"]
+
+# 規則說明：這份 ruleset 簡單延伸內建的 OpenAPI 規則，
+# 並加入幾條依你們 style guide 的自訂檢查（可擴充或調整）。
+rules:
+  response_envelope_exists:
+    description: "components.schemas.response_envelope 必須存在（作為通用回應 envelope）"
+    message: "請在 components.schemas 中定義 response_envelope 作為通用回應結構。"
+    given: "$"
+    then:
+      field: "components.schemas.response_envelope"
+      function: truthy
+    severity: error
+
+  response_envelope_props:
+    description: "response_envelope 必須包含 request_id、timestamp、code、message"
+    message: "response_envelope 必須包含 request_id、timestamp、code、message 四個欄位（依 style guide）。"
+    given: "$.components.schemas.response_envelope.properties"
+    then:
+      function: schema
+      functionOptions:
+        schema:
+          type: object
+          required:
+            - request_id
+            - timestamp
+            - code
+            - message
+    severity: error
+
+  operation_responses_should_have_example:
+    description: "每個 operation 的 response 應提供 application/json 的 example（至少建議）"
+    message: "請為 operation 的 response 提供 application/json 的 example（便於 mock 與文件）。"
+    given: "$.paths[*][*].responses[*]"
+    then:
+      field: "content.application/json.examples"
+      function: truthy
+    severity: warn
+
+  properties_should_be_snake_case:
+    description: "建議 schema properties 使用 snake_case 命名"
+    message: "建議使用 snake_case（小寫、底線）命名 schema 屬性，例如 request_id、created_at。"
+    given: "$.components.schemas..properties.*"
+    then:
+      field: "@key"
+      function: pattern
+      functionOptions:
+        match: "^[a-z][a-z0-9_]*$"
+    severity: warn
