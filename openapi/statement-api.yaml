@@ -1,0 +1,225 @@
+openapi: 3.0.1
+info:
+  title: Statement API
+  version: "1.0.0"
+  description: "Statement API example with snake_case response envelope"
+servers:
+  - url: "http://localhost:4010"
+paths:
+  /statements/{id}:
+    get:
+      summary: 取得單一 statement（範例）
+      tags:
+        - statements
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: 成功，回傳 response_envelope（payload 為 statement）
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/response_envelope'
+                  - type: object
+                    properties:
+                      payload:
+                        $ref: '#/components/schemas/statement'
+              examples:
+                statement_success:
+                  value:
+                    request_id: "req-REDACTED"
+                    timestamp: "2025-10-30T00:00:00Z"
+                    code: "OK"
+                    message: "查詢成功"
+                    payload: null
+                    meta: null
+                    errors: null
+        "422":
+          description: 欄位驗證失敗
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response_envelope'
+              examples:
+                invalid_input:
+                  value:
+                    request_id: "req-REDACTED"
+                    timestamp: "2025-10-30T00:00:00Z"
+                    code: "ERR_INVALID_INPUT"
+                    message: "輸入資料驗證失敗"
+                    payload: null
+                    meta: null
+                    errors:
+                      - field: "id"
+                        message: "必須為整數"
+                        code: "ERR_INVALID_ID"
+        "500":
+          description: 伺服器內部錯誤
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response_envelope'
+              examples:
+                internal_error:
+                  value:
+                    request_id: "req-REDACTED"
+                    timestamp: "2025-10-30T00:00:00Z"
+                    code: "ERR_INTERNAL"
+                    message: "系統錯誤，請稍後再試"
+                    payload: null
+                    meta: null
+                    errors: null
+components:
+  schemas:
+    response_envelope:
+      type: object
+      required:
+        - request_id
+        - timestamp
+        - code
+        - message
+      properties:
+        request_id:
+          type: string
+          description: "用於 log/tracing 的唯一請求識別碼"
+        timestamp:
+          type: string
+          format: date-time
+          description: "server 回應時間"
+        code:
+          type: string
+          description: "應用層級代碼 (OK / ERR_... )"
+        message:
+          type: string
+          description: "人類可讀摘要訊息"
+        payload:
+          type: object
+          nullable: true
+          description: "主要資料載體"
+        meta:
+          type: object
+          nullable: true
+          description: "分頁或其他額外資訊"
+        errors:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/error_item'
+    error_item:
+      type: object
+      properties:
+        field:
+          type: string
+          nullable: true
+          description: "關聯的欄位名稱（若適用）"
+        message:
+          type: string
+        code:
+          type: string
+          description: "唯一錯誤代碼"
+    statement:
+      type: object
+      properties:
+        id:
+          type: integer
+        date_from:
+          type: string
+          nullable: true
+          description: "可為 null"
+        date_to:
+          type: string
+          nullable: true
+        case_no:
+          type: string
+        statement_type:
+          type: string
+        file:
+          type: string
+          format: uri
+        company:
+          type: string
+          nullable: true
+        gui_number:
+          type: string
+        display_ocr_result:
+          $ref: '#/components/schemas/display_ocr_result'
+        problem_grade_list:
+          type: array
+          items:
+            type: string
+        lack_statement_message:
+          type: string
+        action:
+          type: string
+    display_ocr_result:
+      type: object
+      properties:
+        has_grade_137_format:
+          type: boolean
+        form_format:
+          type: string
+        section_grade_counts:
+          type: array
+          items:
+            type: integer
+        validate_status:
+          type: string
+        partial_rule_check_flag:
+          type: boolean
+        abnormal_field_data_message:
+          type: string
+        recognition_results:
+          type: array
+          items:
+            $ref: '#/components/schemas/recognition_result'
+    recognition_result:
+      type: object
+      properties:
+        bounding_box_list:
+          type: array
+          items:
+            $ref: '#/components/schemas/bounding_box_item'
+        predicted_item:
+          type: string
+        predicted_item_name:
+          type: string
+        predicted_item_coordinate:
+          type: object
+          properties:
+            x:
+              type: number
+            y:
+              type: number
+            width:
+              type: number
+            height:
+              type: number
+        color:
+          type: string
+    bounding_box_item:
+      type: object
+      properties:
+        group:
+          type: string
+        content:
+          type: string
+        confidence:
+          type: number
+        bounding_box:
+          type: object
+          properties:
+            x:
+              type: number
+            y:
+              type: number
+            width:
+              type: number
+            height:
+              type: number
+        color:
+          type: string
