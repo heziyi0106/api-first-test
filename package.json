@@ -1,0 +1,15 @@
+{
+  "name": "api-first-test",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "mock": "node ./scripts/run-mock.js",
+    "mock:rm": "node ./scripts/run-mock.js --ephemeral",
+    "mock:detached": "node ./scripts/run-mock.js --detached",
+    "mock:stop": "node ./scripts/run-mock.js --stop",
+    "mock:raw": "docker run --rm -p 4010:4010 stoplight/prism:4 mock -h 0.0.0.0 https://raw.githubusercontent.com/heziyi0106/api-first-test/main/openapi/statement-api.yaml",
+    "lint": "npx --yes @stoplight/spectral-cli@latest lint openapi/statement-api.yaml --verbose",
+    "validate": "npx --yes swagger-cli@4.0.4 validate openapi/statement-api.yaml"
+  },
+  "devDependencies": {}
+}
